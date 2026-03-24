@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import { TeamCard } from "@/components/cards/team-card";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { team } from "@/data/team";
+
+export const metadata: Metadata = { title: "???? ???????" };
+
+export default function TeamPage() {
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-14" data-header-theme="dark">
+      <SectionHeading title="???? ???????" description="???????????????? ??????? LOGOVO." />
+      <div className="grid gap-4 md:grid-cols-3">
+        {team.map((item) => (
+          <TeamCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
+  );
+}

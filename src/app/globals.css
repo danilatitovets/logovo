@@ -1,26 +1,292 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #fafafa;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--background);
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family задаётся через next/font (Inter) в layout */
+}
+
+/* Акцентные заголовки (блок услуг): класс font-display */
+.font-display {
+  font-family: var(--font-display), var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Hero: тёмное небо + лёгкое мерцание слоя */
+@keyframes hero-sky-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.995;
+  }
+}
+
+@keyframes hero-twinkle {
+  0%,
+  100% {
+    opacity: var(--star-op, 0.45);
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.hero-night-sky {
+  animation: hero-sky-pulse 24s ease-in-out infinite;
+}
+
+.hero-star-twinkle {
+  animation-name: hero-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-night-sky,
+  .hero-star-twinkle {
+    animation: none !important;
+  }
+}
+
+/* Отзывы: бесконечная вертикальная прокрутка колонок */
+@keyframes testimonial-marquee-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.testimonial-marquee-track {
+  animation-name: testimonial-marquee-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* Кейсы: горизонтальные движущиеся ленты плиток */
+@keyframes cases-marquee-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes cases-marquee-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.cases-marquee-track-left,
+.cases-marquee-track-right {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.cases-marquee-track-left {
+  animation-name: cases-marquee-left;
+}
+
+.cases-marquee-track-right {
+  animation-name: cases-marquee-right;
+}
+
+/* Локации: бегущая строка адресов + вращение планеты */
+@keyframes locations-ticker-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.locations-ticker {
+  display: inline-block;
+  padding-right: 3rem;
+  animation: locations-ticker-marquee 24s linear infinite;
+  will-change: transform;
+}
+
+@keyframes locations-planet-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.locations-planet-spin {
+  animation: locations-planet-spin 26s linear infinite;
+  will-change: transform;
+}
+
+@keyframes locations-cloud-drift {
+  from {
+    transform: rotate(0deg) scale(1.02);
+  }
+  to {
+    transform: rotate(-360deg) scale(1.02);
+  }
+}
+
+@keyframes locations-ring-spin {
+  from {
+    transform: rotateX(72deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(72deg) rotateZ(360deg);
+  }
+}
+
+.locations-planet-clouds {
+  animation: locations-cloud-drift 42s linear infinite;
+  will-change: transform;
+}
+
+.locations-planet-ring {
+  animation: locations-ring-spin 20s linear infinite;
+  will-change: transform;
+}
+
+/* Скрыть полосу прокрутки, прокрутка колёсом/тачем сохраняется */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Услуги: бегущая лента только во вкладке «Все» */
+.services-showcase-marquee-track {
+  animation: cases-marquee-left 36s linear infinite;
+  will-change: transform;
+}
+
+.services-showcase-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-marquee-track {
+    animation: none !important;
+  }
+
+  .cases-marquee-track-left,
+  .cases-marquee-track-right {
+    animation: none !important;
+  }
+
+  .services-showcase-marquee-track {
+    animation: none !important;
+  }
+
+  .locations-ticker,
+  .locations-planet-spin,
+  .locations-planet-clouds,
+  .locations-planet-ring {
+    animation: none !important;
+  }
+}
+
+/* Контакты: вращение «диска» вокруг центрального блока */
+@keyframes contact-wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.contact-wheel-spin {
+  animation: contact-wheel-spin 42s linear infinite;
+  will-change: transform;
+}
+
+.contact-wheel-spin-reverse {
+  animation: contact-wheel-spin 54s linear infinite reverse;
+  will-change: transform;
+}
+
+/* Колесо на странице контактов: заметное вращение (центр задаётся на svg) */
+.car-wheel-rotate {
+  animation: contact-wheel-spin 4.8s linear infinite;
+  will-change: transform;
+}
+
+/* Контакты: вращается только слой с SVG-колесом, кнопки снаружи не крутятся */
+.contact-wheel-spin-layer {
+  transform-origin: center center;
+  animation: contact-wheel-spin 26s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-wheel-spin,
+  .contact-wheel-spin-reverse,
+  .car-wheel-rotate,
+  .contact-wheel-spin-layer {
+    animation: none !important;
+  }
+}
+
+/* Услуги: цитата — подсветка фраз при скролле (--quote-accent-progress задаётся из JS) */
+.service-quote-accent-wrap {
+  --quote-accent-progress: 0%;
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  vertical-align: baseline;
+}
+
+/* Те же значения, что у .services-headline-fill («Сервис нового уровня») */
+.service-quote-accent-bar {
+  position: absolute;
+  left: -0.07em;
+  right: auto;
+  top: -0.1em;
+  bottom: -0.12em;
+  width: var(--quote-accent-progress);
+  max-width: calc(100% + 0.16em);
+  border-radius: 0.22em;
+  background: linear-gradient(90deg, rgba(217, 255, 88, 0.3), rgba(217, 255, 88, 0.44));
+  box-shadow: 0 0 0 1px rgba(217, 255, 88, 0.12) inset;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.service-quote-accent-base {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
