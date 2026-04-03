@@ -2,80 +2,122 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { LocationsMinskLocatorMap } from "@/components/sections/locations-minsk-locator-map";
+import { OFFICE_ARCS, OFFICE_POINTS, type OfficePoint } from "@/data/locations-offices";
 import { cn } from "@/lib/utils";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
-type OfficePoint = {
-  id: string;
-  city: string;
-  lat: number;
-  lng: number;
-  coords: string;
-  is24h?: boolean;
-  markerLat: number;
-  markerLng: number;
-};
-
-const OFFICE_POINTS: OfficePoint[] = [
-  {
-    id: "lesh",
-    city: "Лещинского 2/1",
-    lat: 53.9096,
-    lng: 27.4311,
-    coords: "КРУГЛОСУТОЧНО",
-    is24h: true,
-    markerLat: 53.935,
-    markerLng: 27.37,
-  },
-  {
-    id: "logo",
-    city: "Логойский тракт 46",
-    lat: 53.9535,
-    lng: 27.6167,
-    coords: "КРУГЛОСУТОЧНО",
-    is24h: true,
-    markerLat: 53.978,
-    markerLng: 27.67,
-  },
-  {
-    id: "gurs",
-    city: "Гурского 34",
-    lat: 53.8743,
-    lng: 27.4772,
-    coords: "с 9:00 до 21:00",
-    is24h: false,
-    markerLat: 53.853,
-    markerLng: 27.43,
-  },
-  {
-    id: "dzer",
-    city: "Дзержинского 132/3",
-    lat: 53.8498,
-    lng: 27.4735,
-    coords: "с 9:00 до 21:00",
-    is24h: false,
-    markerLat: 53.826,
-    markerLng: 27.535,
-  },
-];
-
-const ARCS: Array<{ startLat: number; startLng: number; endLat: number; endLng: number }> = [
-  { startLat: 53.935, startLng: 27.37, endLat: 53.978, endLng: 27.67 },
-  { startLat: 53.978, startLng: 27.67, endLat: 53.853, endLng: 27.43 },
-  { startLat: 53.853, startLng: 27.43, endLat: 53.826, endLng: 27.535 },
-];
-
 const COUNTRIES_GEOJSON_URL = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/** Маршрут в Яндекс.Картах: с геолокацией — от вас до точки (lat,lng по докам Яндекса). */
+function buildYandexRouteUrl(destLat: number, destLng: number, from: { lat: number; lng: number } | null) {
+  if (from) {
+    return `https://yandex.by/maps/?rtext=${from.lat},${from.lng}~${destLat},${destLng}&rtt=auto`;
+  }
+  return `https://yandex.by/maps/?pt=${destLng},${destLat},pm2rdm&z=17&l=map`;
+}
 
 export function LocationsPlanetSection() {
   const globeRef = useRef<any>(null);
   const globeWrapRef = useRef<HTMLDivElement | null>(null);
+  const markerClickRef = useRef<(idx: number) => void>(() => {});
+  const userLocationRef = useRef<{ lat: number; lng: number } | null>(null);
+
   const [polygons, setPolygons] = useState<any[]>([]);
   const [globeSize, setGlobeSize] = useState(560);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoMessage, setGeoMessage] = useState<string | null>(null);
+
   const active = activeIndex !== null ? OFFICE_POINTS[activeIndex] : null;
+
+  const nearestIndex = useMemo(() => {
+    if (!userLocation) return null;
+    let bestI = 0;
+    let bestD = Infinity;
+    OFFICE_POINTS.forEach((p, i) => {
+      const d = haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng);
+      if (d < bestD) {
+        bestD = d;
+        bestI = i;
+      }
+    });
+    return bestI;
+  }, [userLocation]);
+
+  const distancesKm = useMemo(() => {
+    if (!userLocation) return null;
+    return OFFICE_POINTS.map((p) => haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng));
+  }, [userLocation]);
+
+  useEffect(() => {
+    userLocationRef.current = userLocation;
+  }, [userLocation]);
+
+  const openYandexRoute = useCallback((idx: number) => {
+    const p = OFFICE_POINTS[idx];
+    if (!p) return;
+    const url = buildYandexRouteUrl(p.lat, p.lng, userLocationRef.current);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, []);
+
+  useLayoutEffect(() => {
+    markerClickRef.current = (idx: number) => {
+      setActiveIndex(idx);
+      openYandexRoute(idx);
+    };
+  }, [openYandexRoute]);
+
+  const flyGlobeToOffice = useCallback((idx: number) => {
+    const g = globeRef.current;
+    if (!g) return;
+    const p = OFFICE_POINTS[idx];
+    if (!p) return;
+    const controls = g.controls?.();
+    if (controls) {
+      controls.autoRotate = false;
+    }
+    g.pointOfView({ lat: p.markerLat, lng: p.markerLng, altitude: 0.12 }, 1600);
+  }, []);
+
+  useEffect(() => {
+    if (activeIndex === null) return;
+    flyGlobeToOffice(activeIndex);
+  }, [activeIndex, flyGlobeToOffice]);
+
+  const requestGeolocation = useCallback(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoMessage("Геолокация не поддерживается в этом браузере.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoMessage(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoLoading(false);
+        setGeoMessage("Не удалось получить координаты. Разрешите доступ к геолокации в настройках браузера.");
+      },
+      { enableHighAccuracy: true, timeout: 14000, maximumAge: 60_000 },
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,27 +191,34 @@ export function LocationsPlanetSection() {
     if (pointer) pointer.style.opacity = "1";
   }, [activeIndex]);
 
-  const getMapLinks = (lat: number, lng: number) => {
-    const q = `${lat},${lng}`;
+  const getMapLinks = (loc: OfficePoint) => {
+    const { lat, lng } = loc;
+    const from = userLocation;
+    const yandex = buildYandexRouteUrl(lat, lng, from);
     return {
-      google: `https://www.google.com/maps/search/?api=1&query=${q}`,
-      yandex: `https://yandex.by/maps/?ll=${lng}%2C${lat}&z=16&pt=${lng},${lat},pm2rdm`,
+      google: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.fullAddress)}`,
+      yandex,
       gis: `https://2gis.by/minsk/search/${lat}%2C${lng}`,
     };
   };
 
+  const selectOfficeOnly = (idx: number) => {
+    setActiveIndex(idx);
+  };
+
   return (
-    <section className="bg-black text-zinc-100" data-header-theme="dark">
-      <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6 md:py-18">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)] lg:items-center">
-          <div className="max-w-md">
+    <section className="min-w-0 overflow-x-hidden bg-black text-zinc-100" data-header-theme="dark">
+      <div className="mx-auto w-full min-w-0 max-w-6xl px-3 py-12 sm:px-4 md:px-6 md:py-18">
+        <div className="grid min-w-0 gap-8 sm:gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)] lg:items-center">
+          <div className="min-w-0 max-w-md">
             <p className="text-[11px] tracking-[0.24em] text-zinc-500 uppercase">[ OFFICES ]</p>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-white md:text-6xl">
               Сеть LOGOVO в Минске
             </h1>
             <p className="mt-6 text-[15px] leading-relaxed text-zinc-400">
-              На глобусе отмечены наши шиномонтажи. Планета крутится постоянно, оранжевые точки показывают
-              филиалы, а для круглосуточных адресов включается day/night режим.
+              На глобусе — четыре филиала. Нажмите номер в таблице — камера приблизит Беларусь и Минск к выбранной
+              точке. Клик по оранжевой метке на глобусе или на карте ниже открывает маршрут в Яндекс.Картах (если
+              включите геолокацию — маршрут от вас до адреса).
             </p>
             <Link
               href="/contacts"
@@ -210,7 +259,7 @@ export function LocationsPlanetSection() {
               polygonSideColor={() => "rgba(0,0,0,0)"}
               polygonStrokeColor={() => "rgba(255,255,255,0.25)"}
               polygonAltitude={0.0015}
-              arcsData={ARCS}
+              arcsData={OFFICE_ARCS}
               arcColor={() => "#ff7a00"}
               arcAltitude={0.08}
               arcStroke={0.9}
@@ -236,19 +285,19 @@ export function LocationsPlanetSection() {
                 dot.style.display = "inline-flex";
                 dot.style.alignItems = "center";
                 dot.style.justifyContent = "center";
-                dot.style.width = "18px";
-                dot.style.height = "18px";
-                dot.style.borderRadius = "4px";
+                dot.style.width = "22px";
+                dot.style.height = "22px";
+                dot.style.borderRadius = "6px";
                 dot.style.border = "1px solid #ffb27a";
                 dot.style.background = "#ff7a00";
                 dot.style.boxShadow = "0 0 0 7px rgba(255, 122, 0, 0.14)";
                 dot.style.color = "#18181b";
-                dot.style.fontSize = "10px";
+                dot.style.fontSize = "11px";
                 dot.style.fontWeight = "800";
 
                 const label = document.createElement("span");
                 label.className = "office-label";
-                label.textContent = "Наш шиномонтаж";
+                label.textContent = "Маршрут в Яндексе";
                 label.style.position = "absolute";
                 label.style.left = "50%";
                 label.style.top = "-10px";
@@ -275,9 +324,10 @@ export function LocationsPlanetSection() {
                 pointer.style.pointerEvents = "none";
 
                 el.append(dot, label, pointer);
-                el.addEventListener("click", () => {
+                el.addEventListener("click", (ev) => {
+                  ev.stopPropagation();
                   const nextIndex = OFFICE_POINTS.findIndex((item) => item.id === point.id);
-                  if (nextIndex >= 0) setActiveIndex(nextIndex);
+                  if (nextIndex >= 0) markerClickRef.current(nextIndex);
                 });
                 return el;
               }}
@@ -285,47 +335,88 @@ export function LocationsPlanetSection() {
           </div>
         </div>
 
-        <div className="mt-8">
-          <h3 className="mb-1 flex flex-wrap items-center gap-3 font-display text-sm font-bold tracking-[0.14em] text-white uppercase">
-            <span className="inline-block h-2 w-2 shrink-0 rounded-sm bg-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.45)]" aria-hidden />
-            Наш шиномонтаж
-          </h3>
-          <p className="mb-4 max-w-xl text-[13px] leading-relaxed text-zinc-500">
-            Точки сети в Минске — выберите номер или откройте навигацию в картах.
-          </p>
+        <div className="mt-10 md:mt-12">
+          <LocationsMinskLocatorMap
+            offices={OFFICE_POINTS}
+            activeIndex={activeIndex}
+            userPos={userLocation}
+            nearestIndex={nearestIndex}
+            onOfficeActivate={(idx) => markerClickRef.current(idx)}
+          />
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-white/9 bg-[#070708]/90 shadow-[0_12px_48px_rgba(0,0,0,0.5)] backdrop-blur-lg">
-          <table className="w-full min-w-[min(100%,680px)] table-fixed border-collapse text-left text-[13px] leading-snug">
+        <div className="mt-10 md:mt-12">
+          <h3 className="mb-1 flex flex-wrap items-center gap-3 font-display text-sm font-bold tracking-[0.14em] text-white uppercase">
+            <span
+              className="inline-block h-2 w-2 shrink-0 rounded-sm bg-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.45)]"
+              aria-hidden
+            />
+            Наш шиномонтаж
+          </h3>
+          <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-zinc-500 md:text-[15px]">
+            Номер в кружке — как на глобусе и на карте Минска. Включите геолокацию, чтобы увидеть расстояние до каждого
+            филиала и подсказку «ближайший».
+          </p>
+
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+            <button
+              type="button"
+              onClick={requestGeolocation}
+              disabled={geoLoading}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-amber-400/40 bg-amber-400/10 px-5 text-[13px] font-bold text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-400/15 disabled:opacity-50"
+            >
+              {geoLoading ? "Определяем…" : userLocation ? "Обновить моё местоположение" : "Моё местоположение — расстояния"}
+            </button>
+            {userLocation ? (
+              <span className="text-[13px] text-zinc-500">
+                Ближайший пункт:{" "}
+                <strong className="text-zinc-200">
+                  №{nearestIndex !== null ? nearestIndex + 1 : "—"} — {nearestIndex !== null ? OFFICE_POINTS[nearestIndex]?.city : ""}
+                </strong>
+              </span>
+            ) : null}
+          </div>
+          {geoMessage ? <p className="mb-4 text-[13px] text-red-400/90">{geoMessage}</p> : null}
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-white/9 bg-[#070708]/90 shadow-[0_12px_48px_rgba(0,0,0,0.5)] backdrop-blur-lg">
+          <table className="w-full max-w-full table-fixed border-collapse text-left leading-snug">
             <colgroup>
-              <col className="w-[52px]" />
+              <col className="w-[48px] sm:w-[56px]" />
               <col />
-              <col className="min-w-[140px] w-[26%]" />
-              <col className="w-[132px]" />
+              <col className="w-[26%] md:w-[22%]" />
+              <col className="w-[18%]" />
+              <col className="w-[92px] sm:w-[108px] md:w-[128px]" />
             </colgroup>
             <thead>
               <tr className="border-b border-white/10 bg-zinc-950/90">
                 <th
                   scope="col"
-                  className="px-2 py-2.5 text-center text-[10px] font-semibold tracking-[0.12em] text-zinc-500 uppercase"
+                  className="px-1.5 py-3 text-center text-[9px] font-semibold tracking-[0.12em] text-zinc-500 uppercase sm:px-2 sm:text-[10px]"
                 >
                   №
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2.5 text-left text-[10px] font-semibold tracking-[0.12em] text-yellow-400/95 uppercase"
+                  className="min-w-0 px-2 py-3 text-left text-[9px] font-semibold tracking-[0.12em] text-yellow-400/95 uppercase sm:px-3 sm:text-[10px]"
                 >
                   Адрес
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2.5 text-left text-[10px] font-semibold tracking-[0.12em] text-zinc-500 uppercase"
+                  className="px-1.5 py-3 text-left text-[9px] font-semibold tracking-[0.12em] text-zinc-500 uppercase sm:px-3 sm:text-[10px]"
                 >
                   Режим
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2.5 text-right text-[10px] font-semibold tracking-[0.12em] text-zinc-500 uppercase"
+                  className="px-1.5 py-3 text-left text-[9px] font-semibold tracking-[0.12em] text-zinc-500 uppercase sm:px-3 sm:text-[10px]"
+                >
+                  До вас
+                </th>
+                <th
+                  scope="col"
+                  className="px-1.5 py-3 text-right text-[9px] font-semibold tracking-[0.12em] text-zinc-500 uppercase sm:px-3 sm:text-[10px]"
                 >
                   Карты
                 </th>
@@ -333,7 +424,8 @@ export function LocationsPlanetSection() {
             </thead>
             <tbody>
               {OFFICE_POINTS.map((loc, idx) => {
-                const links = getMapLinks(loc.lat, loc.lng);
+                const links = getMapLinks(loc);
+                const dist = distancesKm?.[idx];
                 return (
                   <tr
                     key={`row-${loc.id}`}
@@ -343,14 +435,15 @@ export function LocationsPlanetSection() {
                       idx === activeIndex
                         ? "bg-amber-400/[0.07] ring-1 ring-inset ring-amber-400/25"
                         : "hover:bg-white/4",
+                      nearestIndex === idx && userLocation ? "ring-1 ring-inset ring-emerald-500/30" : "",
                     )}
                   >
-                    <td className="align-middle px-2 py-2 text-center">
+                    <td className="align-middle px-1.5 py-3 text-center sm:px-2">
                       <button
                         type="button"
-                        onClick={() => setActiveIndex(idx)}
+                        onClick={() => selectOfficeOnly(idx)}
                         className={cn(
-                          "inline-flex size-7 items-center justify-center rounded-md border text-[11px] font-bold tabular-nums transition",
+                          "inline-flex size-8 items-center justify-center rounded-md border text-[11px] font-bold tabular-nums transition sm:size-9 sm:text-[12px] md:size-10 md:text-[13px]",
                           idx === activeIndex
                             ? "border-yellow-400/60 bg-yellow-400/15 text-yellow-300 shadow-[0_0_0_1px_rgba(250,204,21,0.2)_inset]"
                             : "border-white/15 text-zinc-400 hover:border-white/30 hover:text-zinc-200",
@@ -359,13 +452,22 @@ export function LocationsPlanetSection() {
                         {idx + 1}
                       </button>
                     </td>
-                    <td className="align-middle px-3 py-2 font-semibold text-yellow-400/95">
-                      {loc.city}
+                    <td className="min-w-0 align-middle px-2 py-3 sm:px-3">
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="text-pretty wrap-break-word text-[14px] font-bold leading-snug text-yellow-400/95 sm:text-[16px] md:text-lg lg:text-xl">
+                          {loc.city}
+                        </span>
+                        {nearestIndex === idx && userLocation ? (
+                          <span className="inline-flex w-fit items-center rounded-md border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-emerald-200">
+                            Ближайший к вам
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
-                    <td className="align-middle px-3 py-2">
+                    <td className="min-w-0 align-middle px-1.5 py-3 sm:px-3">
                       <span
                         className={cn(
-                          "inline-flex max-w-full items-center rounded-md border px-2 py-0.5 text-[11px] font-medium leading-tight tracking-wide uppercase",
+                          "inline-flex max-w-full items-center rounded-md border px-1.5 py-1 text-[9px] font-semibold leading-tight tracking-wide uppercase sm:px-2 sm:text-[11px] md:text-xs",
                           loc.is24h
                             ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-200/95"
                             : "border-white/10 bg-white/4 text-zinc-400",
@@ -374,15 +476,24 @@ export function LocationsPlanetSection() {
                         {loc.coords}
                       </span>
                     </td>
-                    <td className="align-middle px-3 py-2 text-right">
-                      <div className="inline-flex items-center justify-end gap-2">
+                    <td className="min-w-0 align-middle px-1.5 py-3 text-[12px] font-semibold tabular-nums text-zinc-300 sm:px-3 sm:text-[14px] md:text-[15px]">
+                      {dist !== undefined ? (
+                        <>
+                          {dist < 1 ? `${Math.round(dist * 1000)} м` : `${dist.toFixed(1)} км`}
+                        </>
+                      ) : (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </td>
+                    <td className="align-middle px-1 py-3 text-right sm:px-2 md:px-3">
+                      <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
                         <a
                           href={links.google}
                           target="_blank"
                           rel="noreferrer"
                           aria-label={`Открыть ${loc.city} в Google Maps`}
                           title="Google Maps"
-                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[12px] font-bold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md"
+                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md sm:size-9 sm:text-[11px] md:size-10 md:text-[12px]"
                         >
                           G
                         </a>
@@ -390,9 +501,13 @@ export function LocationsPlanetSection() {
                           href={links.yandex}
                           target="_blank"
                           rel="noreferrer"
-                          aria-label={`Открыть ${loc.city} в Яндекс Картах`}
-                          title="Яндекс Карты"
-                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[12px] font-bold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md"
+                          aria-label={
+                            userLocation
+                              ? `Маршрут до ${loc.city} в Яндекс Картах`
+                              : `Открыть ${loc.city} в Яндекс Картах`
+                          }
+                          title={userLocation ? "Яндекс: маршрут от вас" : "Яндекс Карты"}
+                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md sm:size-9 sm:text-[11px] md:size-10 md:text-[12px]"
                         >
                           Я
                         </a>
@@ -402,7 +517,7 @@ export function LocationsPlanetSection() {
                           rel="noreferrer"
                           aria-label={`Открыть ${loc.city} в 2ГИС`}
                           title="2ГИС"
-                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white px-0.5 text-[7.5px] font-extrabold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md sm:text-[8px]"
+                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white px-0.5 text-[6px] font-extrabold leading-none tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset] transition hover:bg-zinc-100 hover:shadow-md sm:size-9 sm:text-[7px] md:size-10 md:text-[8px]"
                         >
                           2GIS
                         </a>

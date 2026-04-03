@@ -28,8 +28,8 @@ export default async function CaseDetailPage({ params }: CaseDetailProps) {
   }
 
   return (
-    <article className="min-h-[60vh] bg-black text-zinc-100" data-header-theme="dark">
-      <div className="mx-auto w-full max-w-4xl px-4 py-10 md:px-6 md:py-14">
+    <article className="min-h-[60vh] min-w-0 overflow-x-hidden bg-black text-zinc-100" data-header-theme="dark">
+      <div className="mx-auto w-full min-w-0 max-w-4xl px-3 py-8 sm:px-4 md:px-6 md:py-14">
         <Link
           href="/cases"
           className="inline-flex text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-300"

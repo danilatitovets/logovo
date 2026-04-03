@@ -5,12 +5,12 @@ import { PricingPlans } from "@/components/pricing/pricing-plans";
 export const metadata: Metadata = {
   title: "Прейскурант",
   description:
-    "Прейскурант комплекса шиномонтажа: монтаж, балансировка, ремонт колёс, дополнительные услуги LOGOVO.",
+    "Прейскурант LOGOVO: шиномонтаж и ремонт. Отдельно — скидки и программа «тайный покупатель». В стоимость включены расходные материалы.",
 };
 
 export default function PricesPage() {
   return (
-    <section className="relative overflow-hidden bg-black" data-header-theme="dark">
+    <section className="relative min-w-0 overflow-x-hidden bg-black" data-header-theme="dark">
       <HeroNightSkyBackdrop />
       <div className="relative z-10">
         <PricingPlans showVideoSlot={false} />

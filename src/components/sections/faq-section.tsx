@@ -41,8 +41,8 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-black pb-20 pt-14 md:pb-24 md:pt-16" data-header-theme="dark">
-      <div className="mx-auto w-full max-w-4xl px-4 md:px-6">
+    <section className="min-w-0 overflow-x-hidden bg-black pb-16 pt-12 md:pb-24 md:pt-16" data-header-theme="dark">
+      <div className="mx-auto w-full min-w-0 max-w-4xl px-3 sm:px-4 md:px-6">
         <h2 className="text-balance text-3xl font-bold tracking-tight text-white md:text-5xl">
           Frequent Questions.
         </h2>

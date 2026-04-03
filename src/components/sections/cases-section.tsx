@@ -19,9 +19,9 @@ export function CasesSection() {
   const bottomRow = marqueeSlice(4, 6);
 
   return (
-    <section className="bg-black" data-header-theme="dark">
-      <div className="mx-auto w-full max-w-[1440px] px-0 py-14 md:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+    <section className="min-w-0 overflow-x-hidden bg-black" data-header-theme="dark">
+      <div className="mx-auto w-full min-w-0 max-w-[1440px] px-0 py-12 md:py-20">
+        <div className="mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-4 md:px-6">
           <p className="text-xs font-semibold tracking-[0.2em] text-amber-400 uppercase">Реальные задачи</p>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-5xl">
             <span className="text-amber-400">Кейсы</span>

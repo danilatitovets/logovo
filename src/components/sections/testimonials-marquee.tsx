@@ -121,8 +121,8 @@ export function TestimonialsMarquee({
   const durations = [52, 44, 58];
 
   return (
-    <div className="w-full">
-      <div className="mx-auto max-w-3xl px-4 pb-10 text-center">
+    <div className="w-full min-w-0 overflow-x-hidden">
+      <div className="mx-auto max-w-3xl px-3 pb-8 text-center sm:px-4 md:pb-10">
         <h2 className="text-balance text-3xl font-bold tracking-tight text-white md:text-4xl">{title}</h2>
         {subtitle ? <p className="mt-3 text-zinc-500">{subtitle}</p> : null}
         {showCta ? (
@@ -138,7 +138,7 @@ export function TestimonialsMarquee({
         ) : null}
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4">
+      <div className="relative mx-auto min-w-0 max-w-6xl px-3 sm:px-4">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-linear-to-b from-black to-transparent"
           aria-hidden

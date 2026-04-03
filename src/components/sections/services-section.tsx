@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -363,16 +364,16 @@ export function ServicesSection() {
       gsap.set(accentHeadline, { ["--services-accent-progress" as string]: "0%" });
       gsap.fromTo(
         head,
-        { opacity: 0, y: 28 },
+        { opacity: 0, y: 22 },
         {
           opacity: 1,
           y: 0,
           ease: "none",
           scrollTrigger: {
             trigger: root,
-            start: "top 92%",
-            end: "top 68%",
-            scrub: 0.45,
+            start: "top 97%",
+            end: "top 78%",
+            scrub: 0.4,
           },
         },
       );
@@ -381,14 +382,14 @@ export function ServicesSection() {
         ease: "none",
         scrollTrigger: {
           trigger: head,
-          start: "top 88%",
-          end: "top 52%",
-          scrub: 0.7,
+          start: "top 92%",
+          end: "top 62%",
+          scrub: 0.55,
         },
       });
       gsap.fromTo(
         children,
-        { opacity: 0, y: 36 },
+        { opacity: 0, y: 28 },
         {
           opacity: 1,
           y: 0,
@@ -396,9 +397,9 @@ export function ServicesSection() {
           stagger: 0.08,
           scrollTrigger: {
             trigger: cols,
-            start: "top 95%",
-            end: "top 72%",
-            scrub: 0.5,
+            start: "top 99%",
+            end: "top 78%",
+            scrub: 0.42,
           },
         },
       );
@@ -469,7 +470,7 @@ export function ServicesSection() {
     <section
       ref={rootRef}
       id="services"
-      className="relative z-10 scroll-mt-20 -mt-8 bg-black md:-mt-12"
+      className="relative z-10 scroll-mt-20 -mt-14 bg-black md:-mt-20"
       data-header-theme="dark"
     >
       <div className="relative w-full" aria-hidden>
@@ -480,7 +481,7 @@ export function ServicesSection() {
           className="pointer-events-none absolute inset-x-0 top-0 h-px origin-center scale-x-0 bg-amber-400 opacity-0 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
         />
       </div>
-      <div className="mx-auto max-w-6xl px-4 pt-10 pb-16 md:px-6 md:pt-12 md:pb-24">
+      <div className="mx-auto min-w-0 max-w-6xl px-3 pt-8 pb-14 sm:px-4 md:px-6 md:pt-12 md:pb-24">
         <div ref={headRef} id="services-headline" className="relative z-30 max-w-3xl">
           <h2 className="text-balance text-3xl font-bold tracking-tight text-white md:text-4xl">
             <span ref={headlineAccentRef} className="services-headline-wrap">
@@ -516,6 +517,18 @@ export function ServicesSection() {
               </div>
             );
           })}
+        </div>
+
+        <div className="mt-12 flex flex-col items-center gap-4 border-t border-white/10 pt-10 text-center md:mt-14 md:gap-5 md:pt-12">
+          <p className="max-w-md text-pretty text-sm leading-relaxed text-zinc-500 md:text-[15px]">
+            Здесь только часть направлений. Полный список услуг, фильтры и карточки — на отдельной странице.
+          </p>
+          <Link
+            href="/services"
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-amber-400 px-8 py-3 text-[15px] font-bold text-zinc-950 shadow-[0_4px_24px_rgba(250,204,21,0.22)] transition hover:bg-amber-300 hover:shadow-[0_6px_28px_rgba(250,204,21,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          >
+            Больше услуг
+          </Link>
         </div>
 
         <div className="mt-16 bg-black px-6 sm:mt-20 sm:px-12 md:mt-24 md:px-20 lg:px-28 xl:px-36">

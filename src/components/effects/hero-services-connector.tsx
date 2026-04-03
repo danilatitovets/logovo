@@ -11,8 +11,8 @@ export const SERVICES_BORDER_SPREAD_EVENT = "logovo:services-border-spread";
 /** Сброс слоя при скролле вверх (до порога линии) */
 export const SERVICES_BORDER_RESET_EVENT = "logovo:services-border-reset";
 
-const SPREAD_AT = 0.992;
-const RESET_BELOW = 0.97;
+const SPREAD_AT = 0.96;
+const RESET_BELOW = 0.93;
 
 export function HeroServicesConnector() {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -89,8 +89,9 @@ export function HeroServicesConnector() {
       trigger: "[data-hero-root]",
       start: "top top",
       endTrigger: "#services",
-      end: "top 70%",
-      scrub: 0.65,
+      /** Выше % — линия и вспышка границы раньше, меньше скролла от лого */
+      end: "top 88%",
+      scrub: 0.55,
       onUpdate: (self) => {
         progressRef.current = self.progress;
         applyDraw(self.progress);

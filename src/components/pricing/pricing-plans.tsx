@@ -3,7 +3,10 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
-import { forwardRef, useLayoutEffect, useRef } from "react";
+import { BookingConsentCheckbox } from "@/components/booking/booking-consent-checkbox";
+import { forwardRef, type FormEvent, type ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { siteConfig } from "@/data/site";
+import { cn } from "@/lib/utils";
 import { PricingCosmicVideo } from "@/components/pricing/pricing-cosmic-video";
 import { PricingHoverVideo } from "@/components/pricing/pricing-hover-video";
 import {
@@ -34,35 +37,154 @@ gsap.registerPlugin(ScrollTrigger);
 const panel =
   "rounded-2xl border border-white/10 bg-zinc-950/50 shadow-[0_8px_40px_rgba(0,0,0,0.35)] backdrop-blur-md";
 
+/** Карточка формы — как на /book */
+const bookingFormCard =
+  "rounded-xl border border-white/10 bg-zinc-950/55 shadow-[0_20px_56px_rgba(0,0,0,0.4)] backdrop-blur-md";
+
+const bookUnderlineInput = cn(
+  "mt-1 w-full border-0 border-b border-white/20 bg-transparent py-1.5 text-[15px] text-white outline-none transition-colors",
+  "placeholder:text-zinc-600 focus:border-b-amber-400/60",
+);
+
+function BookField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <span className="text-[11px] font-medium tracking-wide text-zinc-500 uppercase">{label}</span>
+      {children}
+    </div>
+  );
+}
+
 /** Заголовки секций — как на остальных тёмных страницах */
 const sectionTitle = "text-lg font-semibold tracking-tight text-white md:text-xl";
 const sectionLead = "mt-2 text-[13px] leading-relaxed text-zinc-500";
 const blockGap = "mt-12 md:mt-14";
 
-function SaleDiscountBlock({ className = "" }: { className?: string }) {
+const DISCOUNT_LINES = [
+  <>
+    <span className="font-semibold text-amber-400">5% скидка</span> за историю в Instagram с отметкой нашего
+    шиномонтажа.
+  </>,
+  <>
+    <span className="font-semibold text-amber-400">Сезон на переобувку</span> — скидки постоянным клиентам. Оставьте
+    номер мастеру или администратору: пришлём SMS со скидкой.
+  </>,
+  <>
+    <span className="font-semibold text-amber-400">Корпоративным клиентам и такси</span> — объёмные условия обсуждаем
+    отдельно: почта или Telegram сети.
+  </>,
+] as const;
+
+/** Левая колонка — в духе страницы /book */
+function SaleDiscountBlock({ className }: { className?: string }) {
   return (
-    <section
-      className={`relative overflow-hidden rounded-2xl border border-amber-400/35 bg-linear-to-br from-amber-400/12 via-zinc-950/85 to-zinc-950/90 p-5 shadow-[0_14px_50px_rgba(0,0,0,0.35)] md:p-6 ${className}`}
-    >
-      <div className="pointer-events-none absolute -top-16 -right-12 h-36 w-36 rounded-full bg-amber-300/20 blur-3xl" aria-hidden />
-      <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-amber-200/10 blur-3xl" aria-hidden />
-      <div className="relative">
-        <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-300/10 px-3 py-1">
-          <span className="text-[10px] font-bold tracking-[0.2em] text-amber-300 uppercase">Sale</span>
-          <span className="text-[10px] font-semibold tracking-[0.12em] text-zinc-100 uppercase">Скидки</span>
-        </div>
-        <ul className="mt-4 space-y-3 text-[14px] leading-relaxed text-zinc-200 md:text-[15px]">
-          <li className="rounded-xl border border-white/10 bg-black/25 p-3.5 backdrop-blur-sm">
-            <span className="font-semibold text-amber-300">5% скидка</span> за историю в Instagram с отметкой нашего
-            шиномонтажа.
+    <div className={cn("relative min-w-0", className)}>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-[radial-gradient(ellipse_88%_65%_at_50%_100%,rgba(220,90,50,0.11),transparent_62%)] opacity-90"
+        aria-hidden
+      />
+      <p className="relative text-xs font-semibold tracking-[0.2em] text-amber-400 uppercase">Скидки</p>
+      <h2 className="relative mt-2.5 max-w-xl text-balance text-2xl font-bold tracking-tight text-white md:text-[1.85rem] md:leading-[1.12]">
+        Специальные условия и акции
+      </h2>
+      <p className="relative mt-3 max-w-lg text-[15px] leading-snug text-zinc-400">
+        То же оформление, что на странице записи: коротко о скидках слева, заявка на программу «тайный покупатель» —
+        справа.
+      </p>
+      <ul className="relative mt-6 space-y-2.5 text-[15px] leading-snug text-zinc-300">
+        {DISCOUNT_LINES.map((line, i) => (
+          <li key={i} className="flex gap-3">
+            <span className="mt-0.5 shrink-0 text-[10px] text-white/80" aria-hidden>
+              ▶
+            </span>
+            <span>{line}</span>
           </li>
-          <li className="rounded-xl border border-white/10 bg-black/25 p-3.5 backdrop-blur-sm">
-            Скидки постоянным клиентам в сезон на переобувку (оставьте ваш номер мастеру или администратору, и мы
-            пришлём SMS со скидкой).
-          </li>
-        </ul>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SecretShopperBlock({ className }: { className?: string }) {
+  const [sent, setSent] = useState(false);
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const phone = String(fd.get("phone") ?? "").trim();
+    const name = String(fd.get("name") ?? "").trim();
+    const agree = fd.get("agree") === "on";
+    if (!phone || !agree) return;
+
+    const body = [
+      "Заявка: программа «Тайный покупатель»",
+      name ? `Имя: ${name}` : null,
+      `Телефон: ${phone}`,
+      "Прошу связаться и рассказать условия участия.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const mailto = `mailto:${siteConfig.email}?subject=${encodeURIComponent("LOGOVO — тайный покупатель")}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    setSent(true);
+  }
+
+  return (
+    <div className={cn("min-w-0", className)}>
+      <div className={cn("p-5 md:p-6", bookingFormCard)}>
+        <h2 className="text-lg font-bold text-white md:text-xl">Тайный покупатель</h2>
+        <p className="mt-2 text-[14px] leading-snug text-zinc-500">
+          Оставьте контакты — откроется письмо на почту сети. Администратор свяжется и расскажет правила программы и
+          бонус после оценки визита.
+        </p>
+
+        {sent ? (
+          <p className="mt-5 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2.5 text-sm text-amber-200">
+            Если почта не открылась автоматически, напишите на {siteConfig.email} или позвоните {siteConfig.phone}.
+          </p>
+        ) : null}
+
+        {!sent ? (
+          <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
+            <BookField label="Имя (необязательно)">
+              <input name="name" type="text" autoComplete="name" className={bookUnderlineInput} placeholder="" />
+            </BookField>
+
+            <BookField label="Телефон">
+              <input
+                required
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                className={bookUnderlineInput}
+                placeholder=""
+              />
+            </BookField>
+
+            <BookingConsentCheckbox
+              description={
+                <>
+                  Согласен на обработку контакта для программы «Тайный покупатель». Условия — на странице{" "}
+                  <Link href="/contacts" className="text-amber-400/90 underline-offset-2 hover:underline">
+                    Контакты
+                  </Link>
+                  .
+                </>
+              }
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-white py-3 text-center text-sm font-bold text-zinc-950 transition hover:bg-zinc-100"
+            >
+              Отправить заявку
+            </button>
+          </form>
+        ) : null}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -82,18 +204,23 @@ function PriceTable({
   highlightColIndex?: number;
 }) {
   return (
-    <div className={`overflow-x-auto ${panel}`}>
-      <table className="w-full min-w-[640px] border-collapse text-left text-[13px]">
+    <div
+      className={cn(
+        "-mx-1 overflow-x-auto overscroll-x-contain px-1 [-webkit-overflow-scrolling:touch] sm:mx-0 sm:px-0",
+        panel,
+      )}
+    >
+      <table className="w-full min-w-[520px] border-collapse text-left text-[11px] sm:min-w-[600px] sm:text-[12px] md:min-w-[640px] md:text-[13px]">
         <thead>
           <tr className="border-b border-white/10 bg-zinc-950/80">
-            <th className="sticky left-0 z-10 w-10 bg-zinc-950/95 px-3 py-3.5 backdrop-blur-sm" aria-hidden>
+            <th className="sticky left-0 z-10 w-8 bg-zinc-950/95 px-1.5 py-2.5 backdrop-blur-sm sm:w-10 sm:px-3 sm:py-3.5" aria-hidden>
               {" "}
             </th>
             {columns.map((c, i) => (
               <th
                 key={c}
                 className={[
-                  "whitespace-nowrap px-2 py-3.5 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 md:text-xs md:tracking-widest",
+                  "whitespace-nowrap px-1 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.06em] text-zinc-500 sm:px-2 sm:text-[10px] sm:tracking-[0.08em] md:py-3.5 md:text-xs md:tracking-widest",
                   highlightColIndex === i ? "bg-white/4 text-zinc-200" : "",
                 ].join(" ")}
               >
@@ -113,9 +240,10 @@ function PriceTable({
             >
               <th
                 className={[
-                  "sticky left-0 z-10 whitespace-nowrap bg-zinc-950/95 px-3 py-2.5 text-left text-[13px] font-medium backdrop-blur-sm",
+                  "sticky left-0 z-10 max-w-[min(42vw,11rem)] truncate bg-zinc-950/95 px-1.5 py-2 text-left text-[11px] font-medium backdrop-blur-sm sm:max-w-none sm:whitespace-nowrap sm:px-3 sm:py-2.5 sm:text-[13px]",
                   row.accent ? "text-zinc-100" : "text-zinc-300",
                 ].join(" ")}
+                title={row.name}
               >
                 {row.name}
               </th>
@@ -123,7 +251,7 @@ function PriceTable({
                 <td
                   key={i}
                   className={[
-                    "px-2 py-2.5 text-center tabular-nums text-zinc-400",
+                    "px-1 py-2 text-center tabular-nums text-zinc-400 sm:px-2 sm:py-2.5",
                     highlightColIndex === i ? "bg-white/2 text-zinc-200" : "",
                   ].join(" ")}
                 >
@@ -264,14 +392,18 @@ type PricingPlansProps = {
   variant?: "full" | "compact";
 };
 
+type PricesMainTab = "prices" | "discounts";
+
 export function PricingPlans({
   showVideoSlot = false,
   variant = "full",
 }: PricingPlansProps) {
+  const [mainTab, setMainTab] = useState<PricesMainTab>("prices");
+
   if (variant === "compact") {
     return (
       <div className="bg-black text-zinc-100">
-        <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+        <div className="mx-auto w-full min-w-0 max-w-6xl px-3 py-14 sm:px-4 md:px-6 md:py-20">
           <header className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">Прейскурант</p>
             <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl">
@@ -297,7 +429,7 @@ export function PricingPlans({
 
   return (
     <div className="text-zinc-100">
-      <div className="relative mx-auto w-full max-w-6xl px-4 pb-14 pt-10 md:px-6 md:pb-20 md:pt-12">
+      <div className="relative mx-auto w-full min-w-0 max-w-6xl px-3 pb-12 pt-8 sm:px-4 md:px-6 md:pb-20 md:pt-12">
         <div className="relative z-10">
           {showVideoSlot ? (
             <div className="relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-2xl md:mb-16">
@@ -311,17 +443,75 @@ export function PricingPlans({
             <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl">
               {pricingPageIntro.subtitle}
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-500">{pricingPageIntro.includedLine}</p>
+            <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-zinc-500">
+              Таблицы цен и состав работ — во вкладке «Прайс». Скидки и программа «тайный покупатель» — отдельно.
+            </p>
           </header>
-          <SaleDiscountBlock className="mt-8" />
 
-          <section className={`mt-12 space-y-3 p-5 md:p-6 ${panel}`}>
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600">Уже включено</p>
-            <ul className="space-y-2 text-[14px]">
+          <nav
+            className="mx-auto mt-10 flex justify-center px-4 md:mt-12 md:px-6"
+            aria-label="Разделы прейскуранта"
+          >
+            <div
+              className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/15 bg-zinc-900/80 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md md:flex-nowrap md:gap-1"
+              role="tablist"
+            >
+              {(
+                [
+                  { id: "prices" as const, label: "Прайс" },
+                  { id: "discounts" as const, label: "Скидки и программы" },
+                ] as const
+              ).map((t) => {
+                const active = mainTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setMainTab(t.id)}
+                    className={cn(
+                      "min-h-11 shrink-0 rounded-full px-4 py-2.5 text-[15px] font-bold tracking-tight transition md:min-h-12 md:px-6 md:py-3 md:text-base",
+                      active
+                        ? "bg-white text-zinc-950 shadow-[0_4px_28px_rgba(255,255,255,0.18)]"
+                        : "text-zinc-200 hover:bg-white/10 hover:text-white",
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+
+          {mainTab === "discounts" ? (
+            <div className="mt-10 grid min-w-0 gap-8 lg:mt-12 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.92fr)] lg:items-start lg:gap-10">
+              <SaleDiscountBlock />
+              <SecretShopperBlock />
+            </div>
+          ) : (
+            <>
+          <p className="mx-auto mt-10 max-w-3xl text-pretty text-center text-[17px] leading-snug text-zinc-300 md:mt-12 md:text-xl md:leading-relaxed">
+            В стоимость работ{" "}
+            <span className="relative inline-block px-1 text-[1.35em] font-extrabold tracking-tight text-amber-400 md:text-[1.45em]">
+              ВКЛЮЧЕНЫ
+            </span>{" "}
+            <span className="text-zinc-200">все расходные материалы:</span>
+          </p>
+
+          <section className={`mt-8 space-y-1 p-6 md:mt-10 md:p-8 ${panel} border-amber-400/20 shadow-[0_0_0_1px_rgba(250,204,21,0.06)_inset]`}>
+            <h2 className="text-xl font-bold tracking-tight text-amber-300 md:text-2xl lg:text-[1.65rem]">
+              Уже включено в работу
+            </h2>
+            <p className="pb-2 text-[14px] text-zinc-500 md:text-[15px]">Без доплат в строке чека — сразу в комплексе услуги.</p>
+            <ul className="mt-2 space-y-0 divide-y divide-white/8">
               {freeIncludedItems.map((item) => (
-                <li key={item.label} className="flex flex-wrap justify-between gap-2 border-b border-white/6 py-2.5 last:border-0">
-                  <span className="text-zinc-300">{item.label}</span>
-                  <span className="font-medium tabular-nums text-zinc-400">{item.price}</span>
+                <li
+                  key={item.label}
+                  className="flex flex-wrap items-baseline justify-between gap-3 py-4 first:pt-3 md:py-5"
+                >
+                  <span className="text-[16px] font-medium text-zinc-100 md:text-lg">{item.label}</span>
+                  <span className="text-lg font-bold tabular-nums text-amber-400/95 md:text-xl">{item.price}</span>
                 </li>
               ))}
             </ul>
@@ -399,6 +589,8 @@ export function PricingPlans({
               {pricingBottomBanner.ctaLabel}
             </Link>
           </div>
+            </>
+          )}
           </div>
         </div>
       </div>

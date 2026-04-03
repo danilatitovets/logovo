@@ -8,6 +8,8 @@
 
 html {
   background: var(--background);
+  /* clip вместо hidden — иначе ломается position: sticky у хедера */
+  overflow-x: clip;
 }
 
 body {
@@ -289,4 +291,11 @@ body {
   color: #ffffff;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* Кастомные divIcon на странице адресов (без белой «плашки» Leaflet) */
+.leaflet-div-icon.locations-num-marker,
+.leaflet-div-icon.locations-user-marker {
+  background: transparent !important;
+  border: none !important;
 }

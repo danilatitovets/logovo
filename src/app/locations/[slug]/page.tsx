@@ -26,7 +26,7 @@ export default async function LocationDetailPage({ params }: LocationDetailProps
   }
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-4 py-14" data-header-theme="dark">
+    <section className="mx-auto w-full min-w-0 max-w-4xl overflow-x-hidden px-3 py-12 sm:px-4 md:py-14" data-header-theme="dark">
       <h1 className="text-3xl font-bold">{item.name}</h1>
       <p className="mt-4 text-zinc-700">{item.address}</p>
       <p className="mt-2 text-zinc-700">{item.phone}</p>

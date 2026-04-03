@@ -147,7 +147,7 @@ export function AboutPageContent() {
     >
       <HeroNightSkyBackdrop />
       <div className="relative z-10 w-full pb-20 pt-10 md:pb-28 md:pt-14">
-        <div className="relative mx-auto w-full max-w-6xl px-4 md:px-6">
+        <div className="relative mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-4 md:px-6">
           <div
             ref={scrollZoneRef}
             className="grid min-w-0 items-start gap-10 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:gap-14"

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ScrollTriggerRouteCleanup } from "@/components/effects/scroll-trigger-route-cleanup";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -14,13 +14,19 @@ export const metadata: Metadata = {
   description: siteConfig.description,
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ru" className={`${fontUi.variable} ${fontDisplay.variable}`}>
-      <body className={`${fontUi.className} min-h-screen bg-black text-zinc-100 antialiased`}>
+      <body className={`${fontUi.className} min-h-screen overflow-x-clip bg-black text-zinc-100 antialiased`}>
         <ScrollTriggerRouteCleanup />
         <Header />
-        <main>{children}</main>
+        <main className="relative min-w-0 w-full">{children}</main>
         <Footer />
       </body>
     </html>

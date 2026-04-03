@@ -40,9 +40,9 @@ export function SupportPage() {
   const phoneHref = `tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`;
 
   return (
-    <div className="relative min-h-[70vh] overflow-hidden bg-black text-zinc-100" data-header-theme="dark">
+    <div className="relative min-h-[70vh] min-w-0 overflow-x-hidden bg-black text-zinc-100" data-header-theme="dark">
       <HeroNightSkyBackdrop />
-      <div className="relative z-10 mx-auto max-w-6xl px-4 pt-12 pb-10 md:px-6 md:pt-16 md:pb-14">
+      <div className="relative z-10 mx-auto min-w-0 max-w-6xl px-3 pt-10 pb-8 sm:px-4 md:px-6 md:pt-16 md:pb-14">
         <header className="text-center">
           <p className="text-xs font-semibold tracking-[0.2em] text-amber-400 uppercase">Поддержка</p>
           <h1 className="mt-4 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-[2.5rem]">

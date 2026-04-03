@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Отзывы — LOGOVO" };
 
 export default function ClientsPage() {
   return (
-    <section className="w-full bg-black py-14 md:py-20" data-header-theme="dark">
+    <section className="w-full min-w-0 overflow-x-hidden bg-black py-12 md:py-20" data-header-theme="dark">
       <TestimonialsMarquee
         title="Отзывы клиентов"
         subtitle="Печать, брендинг и сопровождение — как это видят те, кто уже работал с нами."

@@ -114,11 +114,11 @@ export function LocationsScrollSection() {
   return (
     <section
       ref={rootRef}
-      className="relative bg-white px-4 pb-6 pt-12 text-zinc-900 scroll-mt-24 lg:pb-6 lg:pt-14"
+      className="relative -mt-px bg-white px-4 pb-6 pt-10 text-zinc-900 scroll-mt-24 lg:pb-6 lg:pt-14"
       data-header-theme="light"
     >
       <div className="mx-auto mt-[42px] max-w-6xl lg:mt-[58px]">
-        <div className="mb-6 border-b border-zinc-200 pb-6 text-center">
+        <div className="mb-4 text-center md:mb-6 md:pb-2">
           <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-zinc-500">СЕТЬ LOGOVO</p>
           <h2 className="mt-2.5 text-3xl font-semibold tracking-[-0.02em] text-zinc-900 md:text-5xl">
             Наши локации
@@ -128,10 +128,31 @@ export function LocationsScrollSection() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-5xl gap-8">
-          <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white p-3 md:p-4">
-            <div className="relative h-[280px] overflow-hidden rounded-2xl bg-zinc-950 md:h-[340px] lg:h-[380px]">
-              <div className="absolute left-3 top-3 z-500 w-[300px] rounded-2xl border border-zinc-300/50 bg-white/90 p-3.5 text-zinc-900 shadow-[0_10px_24px_rgba(9,9,11,0.16)] backdrop-blur-xl md:w-[310px] md:p-4">
+        <div className="mx-auto grid max-w-5xl gap-3 md:gap-8">
+          <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {locationSpots.map((spot, idx) => (
+              <button
+                key={`strip-${spot.id}`}
+                type="button"
+                onClick={() => {
+                  setActiveIndex(idx);
+                  setHoveredIndex(idx);
+                }}
+                className={[
+                  "shrink-0 snap-start rounded-xl border px-3 py-2 text-left text-[12px] font-semibold leading-snug tracking-tight transition-colors",
+                  idx === activeIndex
+                    ? "border-amber-400 bg-amber-50 text-zinc-900"
+                    : "border-zinc-200 bg-white text-zinc-800 active:bg-zinc-50",
+                ].join(" ")}
+              >
+                {spot.address}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white p-2 md:p-4">
+            <div className="relative h-[300px] overflow-hidden rounded-2xl bg-zinc-950 md:h-[340px] lg:h-[380px]">
+              <div className="absolute left-3 top-3 z-500 hidden w-[300px] rounded-2xl border border-zinc-300/50 bg-white/90 p-3.5 text-zinc-900 shadow-[0_10px_24px_rgba(9,9,11,0.16)] backdrop-blur-xl md:block md:w-[310px] md:p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-800">
                     Маршруты LOGOVO

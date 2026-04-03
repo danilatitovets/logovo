@@ -60,7 +60,7 @@ export function BookingPageContent() {
       data-header-theme="dark"
     >
       <HeroNightSkyBackdrop />
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-5 md:px-6 md:pt-7">
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl px-3 pt-4 sm:px-4 md:px-6 md:pt-7">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.92fr)] lg:items-start lg:gap-10">
           {/* Левая колонка */}
           <div className="relative min-w-0">

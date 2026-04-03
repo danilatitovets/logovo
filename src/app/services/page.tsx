@@ -12,7 +12,7 @@ export default function ServicesPage() {
       data-header-theme="dark"
     >
       <HeroNightSkyBackdrop />
-      <div className="relative z-10 w-full pb-16 md:pb-24">
+      <div className="relative z-10 w-full min-w-0 pb-16 md:pb-24">
         <ServicesPageShowcase services={services} />
       </div>
     </section>

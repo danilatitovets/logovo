@@ -40,16 +40,16 @@ export function HeroSection() {
       const scroll = {
         trigger: root,
         start: "top top",
-        end: "+=90vh",
+        end: "+=52vh",
         scrub: 0.55,
       };
 
-      /** Лого: длиннее дистанция + мягче scrub — уменьшение постепенное, не рывком */
+      /** Лого: короче дистанция — к услугам ближе по скроллу */
       const scrollLogo = {
         trigger: root,
         start: "top top",
-        end: "+=140vh",
-        scrub: 1.35,
+        end: "+=72vh",
+        scrub: 1.1,
       };
 
       /** Небо + градиенты в одном блоке — без «разъезда» слоёв */
@@ -82,7 +82,7 @@ export function HeroSection() {
       ref={rootRef}
       data-hero-root
       data-header-theme="dark"
-      className="relative -mt-16 min-h-[145vh] overflow-hidden"
+      className="relative -mt-16 min-h-[112vh] overflow-hidden"
     >
       <HeroServicesConnector />
       <div className="absolute inset-0 min-h-full overflow-hidden">
@@ -92,7 +92,7 @@ export function HeroSection() {
           style={{ transform: "translateZ(0)" }}
         >
           <div
-            className="hero-night-sky absolute inset-x-0 top-0 min-h-[145vh]"
+            className="hero-night-sky absolute inset-x-0 top-0 min-h-[112vh]"
             style={NIGHT_SKY_LAYERS}
           />
           <div
@@ -179,7 +179,7 @@ export function HeroSection() {
         ))}
       </div>
 
-      <div className="relative z-20 mx-auto flex h-screen min-h-0 w-full max-w-6xl flex-col px-4 text-center">
+      <div className="relative z-20 mx-auto flex h-screen min-h-0 w-full min-w-0 max-w-6xl flex-col px-3 text-center sm:px-4">
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
           <div
             ref={logoWrapRef}

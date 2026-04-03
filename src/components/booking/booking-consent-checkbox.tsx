@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const PARTICLES = [
@@ -24,17 +24,32 @@ const ICON_SKY = [
 
 type BookingConsentCheckboxProps = {
   className?: string;
+  /** Имя поля в форме */
+  name?: string;
+  /** Свой текст вместо стандартного про заявку */
+  description?: ReactNode;
 };
 
-export function BookingConsentCheckbox({ className }: BookingConsentCheckboxProps) {
+export function BookingConsentCheckbox({ className, name = "agree", description }: BookingConsentCheckboxProps) {
   const id = useId();
   const [checked, setChecked] = useState(false);
+
+  const labelBody =
+    description ?? (
+      <>
+        Согласен с обработкой данных для связи по заявке. Политика и условия — на странице{" "}
+        <Link href="/contacts" className="text-amber-400/90 underline-offset-2 hover:underline">
+          Контакты
+        </Link>
+        .
+      </>
+    );
 
   return (
     <label htmlFor={id} className={cn("flex cursor-pointer items-start gap-3 text-[12px] leading-snug text-zinc-400", className)}>
       <input
         id={id}
-        name="agree"
+        name={name}
         type="checkbox"
         required
         checked={checked}
@@ -115,13 +130,7 @@ export function BookingConsentCheckbox({ className }: BookingConsentCheckboxProp
         </span>
       </span>
 
-      <span className="min-w-0 pt-0.5">
-        Согласен с обработкой данных для связи по заявке. Политика и условия — на странице{" "}
-        <Link href="/contacts" className="text-amber-400/90 underline-offset-2 hover:underline">
-          Контакты
-        </Link>
-        .
-      </span>
+      <span className="min-w-0 pt-0.5">{labelBody}</span>
     </label>
   );
 }

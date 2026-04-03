@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navItems } from "@/data/nav";
 import { siteConfig } from "@/data/site";
+import { cn } from "@/lib/utils";
 
 /** Высота полосы под шапкой (h-14 ≈ 56px): берём центр — какой фон «под» хедером */
 const HEADER_PROBE_Y = 28;
@@ -60,6 +62,7 @@ export function Header() {
   }, [pathname]);
 
   const isDark = theme === "darkHero";
+  const logoInvert = isDark && (siteConfig.logoInvertOnDark ?? true);
 
   const linkBase = isDark
     ? "rounded-full px-3 py-1.5 text-[12px] font-semibold text-zinc-400 transition-all duration-200 hover:bg-white/8 hover:text-white"
@@ -80,17 +83,29 @@ export function Header() {
     >
       <div
         className={[
-          "mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 transition-all duration-300 md:px-6",
+          "mx-auto flex w-full min-w-0 max-w-6xl items-center justify-between gap-2 px-3 transition-all duration-300 sm:gap-4 sm:px-4 md:px-6",
           isScrolled ? "h-14" : "h-18",
         ].join(" ")}
       >
         <Link
           href="/"
-          className={`flex shrink-0 items-center transition-all duration-300 ${isDark ? "text-white" : "text-zinc-900"} ${
-            isScrolled ? "scale-100 opacity-100" : "scale-102 opacity-95"
-          }`}
+          className={cn(
+            "flex shrink-0 items-center outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-md",
+            isScrolled ? "scale-100 opacity-100" : "scale-[1.02] opacity-95",
+          )}
+          aria-label={`${siteConfig.name} — на главную`}
         >
-          <span className="text-[15px] font-semibold tracking-tight">{siteConfig.name}</span>
+          <Image
+            src={siteConfig.logoSrc}
+            alt=""
+            width={160}
+            height={40}
+            className={cn(
+              "h-7 w-auto object-contain object-left md:h-8",
+              logoInvert && "brightness-0 invert",
+            )}
+            priority
+          />
         </Link>
 
         {/* Desktop / tablet: всё справа */}

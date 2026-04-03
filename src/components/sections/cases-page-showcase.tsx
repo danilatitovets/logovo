@@ -43,7 +43,7 @@ type CasePhoneCardProps = {
 function CasePhoneCard({ item }: CasePhoneCardProps) {
   const href = `/cases/${item.slug}`;
   return (
-    <article className="flex w-[min(280px,100vw)] shrink-0 flex-col items-center md:w-[300px]">
+    <article className="flex w-[min(280px,calc(100vw-1.5rem))] shrink-0 flex-col items-center md:w-[300px]">
       <p className="font-display mb-3 text-center text-[14px] font-semibold tracking-tight text-zinc-400 md:text-[15px]">
         {shortLabel(item.title)}
       </p>
@@ -106,8 +106,8 @@ export function CasesPageShowcase({ cases: caseList }: CasesPageShowcaseProps) {
   }, [caseList, tab]);
 
   return (
-    <div className="relative z-10 w-full">
-      <header className="mx-auto max-w-3xl px-4 pt-14 text-center md:px-6 md:pt-20">
+    <div className="relative z-10 w-full min-w-0 overflow-x-hidden">
+      <header className="mx-auto max-w-3xl px-3 pt-12 text-center sm:px-4 md:px-6 md:pt-20">
         <p className="text-xs font-semibold tracking-[0.22em] text-zinc-500 uppercase">Кейсы</p>
         <h1 className="font-display mt-5 text-balance text-[2rem] font-bold tracking-tight text-white sm:text-4xl md:text-[2.75rem] md:leading-[1.08]">
           Работы и результаты

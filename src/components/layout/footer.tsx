@@ -11,9 +11,9 @@ export function Footer() {
 
   return (
     <footer className="border-t border-white/10 bg-black text-zinc-100" data-header-theme="dark">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-12 pb-0 md:px-6 md:pt-16">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)] lg:gap-14 lg:items-start">
-          <div className="flex max-w-md flex-col">
+      <div className="mx-auto w-full min-w-0 max-w-6xl px-3 pt-10 pb-0 sm:px-4 md:px-6 md:pt-16">
+        <div className="grid min-w-0 gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)] lg:gap-14 lg:items-start">
+          <div className="flex min-w-0 max-w-md flex-col">
             <Link href="/" className="w-fit text-sm font-semibold tracking-tight text-white">
               {siteConfig.name}
             </Link>
@@ -25,7 +25,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(13.5rem,1.2fr)] lg:gap-x-8 lg:gap-y-6">
+          <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8 sm:gap-x-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(13.5rem,1.2fr)] lg:gap-x-8 lg:gap-y-6">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.2em] text-zinc-500 uppercase">Сайт</p>
               <ul className="mt-3 space-y-2">

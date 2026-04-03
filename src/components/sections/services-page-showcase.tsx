@@ -40,8 +40,8 @@ type PhoneCardProps = {
 function ServicePhoneCard({ item }: PhoneCardProps) {
   const href = `/services/${item.slug}`;
   return (
-    <article className="flex w-[min(280px,100vw)] shrink-0 flex-col items-center md:w-[300px]">
-      <p className="font-display mb-3 text-center text-[14px] font-semibold tracking-tight text-zinc-400 md:text-[15px]">
+    <article className="flex w-[min(280px,calc(100vw-1.5rem))] shrink-0 flex-col items-center md:w-[300px]">
+      <p className="font-display mb-3 text-center text-[17px] font-bold tracking-tight text-zinc-100 md:text-[19px]">
         {shortLabel(item.title)}
       </p>
       <Link
@@ -78,10 +78,10 @@ function ServicePhoneCard({ item }: PhoneCardProps) {
               />
             </div>
             <div className="font-display shrink-0 border-t border-white/6 bg-[rgba(2,2,6,0.92)] px-5 py-4 backdrop-blur-md">
-              <p className="text-pretty text-[16px] font-semibold leading-snug tracking-tight text-zinc-100 md:text-[17px]">
+              <p className="text-pretty text-[18px] font-bold leading-snug tracking-tight text-white md:text-[20px]">
                 {item.title}
               </p>
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-zinc-500 md:text-[14px]">{item.excerpt}</p>
+              <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-zinc-400 md:text-[15px]">{item.excerpt}</p>
             </div>
           </div>
         </div>
@@ -103,8 +103,8 @@ export function ServicesPageShowcase({ services }: ServicesPageShowcaseProps) {
   }, [services, tab]);
 
   return (
-    <div className="relative z-10 w-full">
-      <header className="mx-auto max-w-3xl px-4 pt-14 text-center md:px-6 md:pt-20">
+    <div className="relative z-10 w-full min-w-0 overflow-x-hidden">
+      <header className="mx-auto max-w-3xl px-3 pt-12 text-center sm:px-4 md:px-6 md:pt-20">
         <p className="text-xs font-semibold tracking-[0.22em] text-zinc-500 uppercase">Услуги</p>
         <h1 className="mt-5 text-balance text-[2rem] font-bold tracking-tight text-white sm:text-4xl md:text-[2.75rem] md:leading-[1.08]">
           Сервис для колёс — в одном месте
@@ -120,7 +120,7 @@ export function ServicesPageShowcase({ services }: ServicesPageShowcaseProps) {
         aria-label="Фильтр по категориям услуг"
       >
         <div
-          className="inline-flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-white/10 bg-zinc-900/70 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md md:flex-nowrap md:gap-0"
+          className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/15 bg-zinc-900/80 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md md:flex-nowrap md:gap-1"
           role="tablist"
         >
           {TABS.map((t) => {
@@ -133,10 +133,10 @@ export function ServicesPageShowcase({ services }: ServicesPageShowcaseProps) {
                 aria-selected={active}
                 onClick={() => setTab(t.id)}
                 className={cn(
-                  "min-h-10 shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold tracking-tight transition md:px-5",
+                  "min-h-11 shrink-0 rounded-full px-4 py-2.5 text-[15px] font-bold tracking-tight transition md:min-h-12 md:px-6 md:py-3 md:text-base",
                   active
-                    ? "bg-white text-zinc-950 shadow-[0_4px_24px_rgba(255,255,255,0.12)]"
-                    : "text-zinc-400 hover:text-zinc-200",
+                    ? "bg-white text-zinc-950 shadow-[0_4px_28px_rgba(255,255,255,0.18)]"
+                    : "text-zinc-200 hover:bg-white/10 hover:text-white",
                 )}
               >
                 {t.label}
@@ -163,6 +163,26 @@ export function ServicesPageShowcase({ services }: ServicesPageShowcaseProps) {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="mx-auto mt-4 max-w-lg px-4 pb-6 text-center md:mt-6 md:px-6 md:pb-10">
+        <p className="text-pretty text-sm leading-relaxed text-zinc-500 md:text-[15px]">
+          Листайте карточки и открывайте услугу для подробностей. Готовы приехать — запишитесь онлайн.
+        </p>
+        <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <Link
+            href="/book"
+            className="inline-flex min-h-12 w-full min-w-[200px] items-center justify-center rounded-full bg-amber-400 px-8 py-3 text-[15px] font-bold text-zinc-950 shadow-[0_4px_24px_rgba(250,204,21,0.22)] transition hover:bg-amber-300 hover:shadow-[0_6px_28px_rgba(250,204,21,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:w-auto"
+          >
+            Записаться
+          </Link>
+          <Link
+            href="/prices"
+            className="inline-flex min-h-12 w-full min-w-[200px] items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 py-3 text-[15px] font-bold text-zinc-100 transition hover:border-white/30 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:w-auto"
+          >
+            Прайс
+          </Link>
         </div>
       </div>
     </div>

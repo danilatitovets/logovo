@@ -5,6 +5,13 @@ export type NavItem = {
 
 export type SiteConfig = {
   name: string;
+  /** Путь к логотипу в `public`, например `/images/logo.png` */
+  logoSrc: string;
+  /**
+   * Если логотип монохромный (тёмный на прозрачном), на тёмном хедере включается инверсия.
+   * Для цветного логотипа поставьте `false`.
+   */
+  logoInvertOnDark?: boolean;
   description: string;
   phone: string;
   email: string;

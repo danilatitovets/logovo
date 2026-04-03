@@ -29,9 +29,9 @@ export default async function ServiceDetailPage({ params }: ServiceDetailProps) 
   }
 
   return (
-    <section className="relative overflow-hidden bg-black text-zinc-100" data-header-theme="dark">
+    <section className="relative min-w-0 overflow-x-hidden bg-black text-zinc-100" data-header-theme="dark">
       <HeroNightSkyBackdrop />
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-4 py-14 md:px-6 md:py-16">
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-4xl px-3 py-12 sm:px-4 md:px-6 md:py-16">
         <Link
           href="/services"
           className="inline-flex items-center text-xs font-semibold tracking-[0.14em] text-zinc-400 uppercase transition hover:text-zinc-200"

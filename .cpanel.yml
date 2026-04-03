@@ -3,6 +3,6 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/logovo24by/public_html
     - /bin/rm -rf $DEPLOYPATH/*
-    - npm ci
+    - npm install
     - npm run build
     - /bin/cp -r out/. $DEPLOYPATH/
